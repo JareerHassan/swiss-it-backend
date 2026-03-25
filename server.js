@@ -68,7 +68,7 @@ export default function handler(req, res) {
 
 // Local dev: start a normal HTTP listener.
 if (!process.env.VERCEL) {
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 4003;
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });
