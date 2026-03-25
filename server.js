@@ -20,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const corsOptions = {
-  origin: 'https://marketplaceadmin.oxmite.com',
+  origin: ['https://swiss-it.vercel.app', 'https://swiss-it-adminpanel.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
 };
