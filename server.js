@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
+import serverlessHttp from 'serverless-http';
 import connectDB from './config/db.js';
 
 import adminRoutes from './routes/adminRoutes.js';
@@ -46,8 +47,14 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
-const PORT = process.env.PORT || 5000;
+// Vercel requires a request handler export; `serverless-http` adapts the Express app.
+const handler = serverlessHttp(app);
+export default handler;
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Local dev: start a normal HTTP listener.
+if (!process.env.VERCEL) {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
