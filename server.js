@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
-import serverlessHttp from 'serverless-http';
 import connectDB from './config/db.js';
 
 import adminRoutes from './routes/adminRoutes.js';
@@ -14,8 +13,6 @@ import submissionRoutes from './routes/submissionRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 
 dotenv.config();
-
-connectDB();
 
 const app = express();
 
@@ -32,6 +29,22 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Connect to DB lazily for serverless (and only for API routes).
+// This avoids crashing the function at cold start when env vars are missing.
+let dbConnectionPromise;
+app.use('/api', async (req, res, next) => {
+    try {
+        if (!dbConnectionPromise) {
+            dbConnectionPromise = connectDB();
+        }
+        await dbConnectionPromise;
+        next();
+    } catch (err) {
+        console.error('DB connection failed:', err);
+        res.status(500).json({ message: 'Database connection failed' });
+    }
+});
+
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/blogs', blogRoutes);
@@ -47,9 +60,11 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
-// Vercel requires a request handler export; `serverless-http` adapts the Express app.
-const handler = serverlessHttp(app);
-export default handler;
+// Vercel Node runtime calls exported handlers with `(req, res)`.
+// We directly delegate to the Express app to avoid `serverless-http` provider mismatches.
+export default function handler(req, res) {
+    return app(req, res);
+}
 
 // Local dev: start a normal HTTP listener.
 if (!process.env.VERCEL) {
