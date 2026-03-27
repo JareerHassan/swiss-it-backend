@@ -192,7 +192,7 @@ export const getBlogById = async (req, res) => {
 const getFullUrl = (filePath) => {
   if (!filePath) return null;
   if (filePath.startsWith('http')) return filePath; // already full URL
-  return `https://blogbackend.lhtl-nadi.com${filePath}`;
+  return `https://backend.highlandgroup.ch/api${filePath}`;
 };
 
 
